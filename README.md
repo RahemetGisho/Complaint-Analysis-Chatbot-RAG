@@ -38,7 +38,7 @@ In this phase, the following steps were completed:
 ## 📁 Project Structure
 
 ```text
-rag-complaint-chatbot/
+Complaint-Analysis-Chatbot-RAG/
 │
 ├── .github/
 │ └── workflows/
