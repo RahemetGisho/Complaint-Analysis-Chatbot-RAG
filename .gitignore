@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.env
+.venv/
+
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# VS Code
+.vscode/
+
+# Data 
+data/raw/
+data/processed/
+*.csv
+*.parquet
+*.pkl
+
+
+# Vector DB / Embeddings
+vector_store/
+*.faiss
+*.index
+chroma_db/
+chroma.sqlite3
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large model / cache files
+models/
+*.bin
+*.pt
+*.pth
+*.h5
+
+# Streamlit / Gradio cache
+.streamlit/
+gradio_cached_examples/
+
+# Git
+.git/
