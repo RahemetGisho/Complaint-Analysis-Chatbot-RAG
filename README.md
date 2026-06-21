@@ -1,113 +1,223 @@
-# Complaint-Analysis-Chatbot-RAG
+# Customer Complaint Analysis with RAG
 
 ## Overview
 
-The Complaint Intelligence System is designed to transform large-scale, unstructured consumer complaint data into a clean, structured dataset that can power semantic search and Retrieval-Augmented Generation (RAG) applications.
+This project builds the foundation of a Retrieval-Augmented Generation (RAG) system using customer complaint data from financial products.
 
-This repository contains the **data processing and exploratory analysis layer (Task 1)**, focusing on preparing high-quality text data from CFPB consumer complaints.
+- **1:** Exploratory Data Analysis (EDA) and preprocessing
+- **2:** Sampling, chunking, embedding generation, and vector store indexing
 
-The goal is to convert raw complaints into a reliable dataset suitable for embedding, retrieval, and downstream AI systems.
+The final output is a retrieval-ready vector database that can be used for semantic search and downstream RAG applications.
 
 ---
+
+# 1: EDA and Preprocessing
 
 ## Objectives
 
-In this phase, the following steps were completed:
+- Explore complaint distributions
+- Analyze missing values
+- Clean complaint narratives
+- Standardize product categories
+- Prepare data for retrieval and embedding
 
-- Loaded and explored a large-scale CFPB complaint dataset
-- Performed data quality assessment and missing value analysis
-- Filtered relevant financial product categories:
-  - Credit Card
-  - Personal Loan
-  - Savings Account
-  - Money Transfer
-- Conducted exploratory data analysis (EDA):
-  - Product distribution analysis
-  - Complaint narrative availability analysis
-  - Word count distribution analysis
-- Built a text preprocessing pipeline:
-  - Lowercasing text
-  - Removing special characters and noise
-  - Removing URLs and HTML artifacts
-  - Removing boilerplate complaint templates
-  - Cleaning redacted placeholders (e.g., XXXX)
-- Generated a cleaned dataset ready for embedding and vector search
+## Processing Steps
 
----
+1. Loaded the CFPB complaint dataset
+2. Removed records with missing complaint narratives
+3. Cleaned complaint text:
+   - Lowercasing
+   - Removing special characters
+   - Removing extra whitespace
+4. Standardized product categories
+5. Created a filtered dataset for downstream processing
 
-## 📁 Project Structure
+## Output
 
 ```text
-Complaint-Analysis-Chatbot-RAG/
-│
-├── .github/
-│ └── workflows/
-│ └── unittests.yml
-│
-├── data/
-│ ├── raw/
-│ ├── processed/
-│ └── filtered_complaints.csv
-│
-├── notebooks/
-│ ├── EDA.ipynb
-│ └── preprocessing.ipynb
-│
-├── src/
-│ └── preprocessing.py
-│
-├── requirements.txt
-└── README.md
+data/filtered_complaints.csv
 ```
 
 ---
 
-## Setup Instructions
+# 2: Text Chunking, Embedding, and Vector Store Indexing
 
-### 1. Clone the repository
+## Objectives
 
+Build a retrieval-ready knowledge base from complaint narratives.
+
+### Pipeline
+
+1. Load cleaned complaint data
+2. Draw a proportional stratified sample
+3. Chunk complaint narratives
+4. Generate embeddings
+5. Store embeddings in ChromaDB
+
+---
+
+## Sampling Strategy
+
+### Stratified Sampling
+
+The full dataset contains more than one million complaints. Generating embeddings for the entire dataset can be computationally expensive.
+
+Using a stratified sample:
+
+- Preserves category balance
+- Reduces processing time
+- Demonstrates the complete RAG pipeline efficiently
+
+---
+
+## Chunking Strategy
+
+Complaint narratives are split using LangChain's `RecursiveCharacterTextSplitter`.
+
+### Parameters
+
+```python
+chunk_size = 500
+chunk_overlap = 50
+```
+
+---
+
+## Embedding Model
+
+Model used:
+
+```text
+sentence-transformers/all-MiniLM-L6-v2
+```
+
+---
+
+## Vector Store
+
+Embeddings are stored in ChromaDB.
+
+---
+
+# Project Structure
+
+```text
+Complaint-Analysis-Chatbot-RAG/
+│
+├── README.md
+│
+├── data/
+│   ├── raw
+│       ├── filtered_complaints.csv
+│   │
+│   └── processed/
+│       ├── sampled_complaints.csv
+│       └── chunks_metadata.csv
+│
+├── notebooks/
+│   └── eda_preprocessing.ipynb
+│
+├── src/
+│   ├── sampling.py
+│   ├── chunking.py
+│   ├── embedding.py
+│   ├── vector_store.py
+│   └── build_pipeline.py
+│
+├── vector_store/
+│
+├── reports/
+│
+├── requirements.txt
+│
+└── .gitignore
+```
+
+---
+
+# Installation
+
+## Clone Repository
+
+```bash
 git clone https://github.com/RahemetGisho/Complaint-Analysis-Chatbot-RAG.git
-
 cd Complaint-Analysis-Chatbot-RAG
+```
 
-### 2. Create a virtual environment
+## Create Virtual Environment
 
+### Windows
+
+```bash
 python -m venv .venv
-
-Activate:
-
-Windows
-
 .venv\Scripts\activate
+```
 
-Linux / Mac
+### Linux / macOS
 
+```bash
+python -m venv .venv
 source .venv/bin/activate
+```
 
-### 3. Install dependencies
+## Install Dependencies
 
+```bash
 pip install -r requirements.txt
+```
 
-## Exploratory Data Analysis Summary
+---
 
-### Data Cleaning Pipeline
+# Running Task 2 Pipeline
 
-The preprocessing pipeline includes:
+From the project root:
 
-- Text normalization (lowercasing)
-- Noise removal (special characters, URLs, HTML artifacts)
-- Boilerplate removal (formal complaint templates)
-- Redaction cleanup (e.g., masked identifiers like XXXX)
-- Whitespace normalization
+```bash
+python src/build_pipeline.py
+```
 
-### Output Dataset
+---
 
-The final processed dataset is saved as:
+# Generated Outputs
 
-data/filtered_complaints.csv
+## Stratified Sample
 
-This file contains:
+```text
+data/processed/sampled_complaints.csv
+```
 
-- Clean complaint narratives
-- Relevant product categories
-- Structured metadata for analysis
+Contains the 12,000-row proportional stratified sample.
+
+---
+
+## Chunk Metadata
+
+```text
+data/processed/chunks_metadata.csv
+```
+
+Contains all generated chunks and associated metadata for inspection and debugging.
+
+---
+
+## ChromaDB Vector Store
+
+```text
+vector_store/
+```
+
+Contains persisted embeddings and metadata used for semantic retrieval.
+
+---
+
+# Technologies Used
+
+- Python
+- Pandas
+- NumPy
+- LangChain
+- Sentence Transformers
+- ChromaDB
+- Jupyter Notebook
+
+---
