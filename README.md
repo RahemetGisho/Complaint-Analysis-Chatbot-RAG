@@ -1,6 +1,6 @@
 # Complaint-Analysis-Chatbot-RAG
 
-A Retrieval-Augmented Generation (RAG) tool that lets Product, Support, and Compliance staff ask plain-English questions about customer complaints and get answers grounded in real complaint excerpts — every claim traceable back to its source.
+A Retrieval-Augmented Generation (RAG) Chatbot that lets Product, Support, and Compliance staff ask plain-English questions about customer complaints and get answers grounded in real complaint excerpts — every claim traceable back to its source.
 
 Built on the CFPB Consumer Complaint Database, scoped to four product lines: Credit Card, Personal Loan, Savings Account, and Money Transfer.
 
