@@ -1,16 +1,3 @@
-"""
-LLM Generation Layer (FIXED + PRODUCTION SAFE)
-
-Supports:
-- HuggingFace Inference API (Qwen, Mistral, Llama, etc.)
-- Local Transformers Pipeline
-
-Fixes:
-- correct HF pipeline usage
-- correct task selection
-- better compatibility across models
-- safer error handling
-"""
 
 import os
 from typing import Optional
@@ -19,9 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# -----------------------------
-# CONFIG
-# -----------------------------
+
 try:
     from config import (
         GENERATION_BACKEND,
@@ -38,15 +23,11 @@ except ImportError:
     TEMPERATURE = 0.2
 
 
-# -----------------------------
-# CACHE
-# -----------------------------
+
 _LOCAL_PIPELINE_CACHE = {}
 
 
-# -----------------------------
-# PUBLIC API
-# -----------------------------
+
 def generate_answer(
     prompt: str,
     backend: str = GENERATION_BACKEND,
@@ -66,9 +47,7 @@ def generate_answer(
     raise ValueError(f"Unsupported backend: {backend}")
 
 
-# -----------------------------
-# HF INFERENCE API
-# -----------------------------
+
 def _generate_hf(prompt: str, model_name: Optional[str], max_new_tokens: int) -> str:
     try:
         from huggingface_hub import InferenceClient
@@ -96,9 +75,7 @@ def _generate_hf(prompt: str, model_name: Optional[str], max_new_tokens: int) ->
         raise RuntimeError(f"HuggingFace generation failed: {e}") from e
 
 
-# -----------------------------
-# LOCAL PIPELINE (FIXED)
-# -----------------------------
+
 def _generate_local(prompt: str, model_name: Optional[str], max_new_tokens: int) -> str:
     try:
         from transformers import pipeline
@@ -110,7 +87,6 @@ def _generate_local(prompt: str, model_name: Optional[str], max_new_tokens: int)
         if generator is None:
             print(f"[INFO] Loading local model: {model}")
 
-            # ✅ FIX 1: correct task (this fixes your error)
             generator = pipeline(
                 task="text-generation",
                 model=model,
@@ -126,11 +102,9 @@ def _generate_local(prompt: str, model_name: Optional[str], max_new_tokens: int)
         if not output:
             raise RuntimeError("Empty model output")
 
-        # text-generation format
         if "generated_text" in output[0]:
             return output[0]["generated_text"].strip()
 
-        # fallback safety
         return str(output[0]).strip()
 
     except Exception as e:

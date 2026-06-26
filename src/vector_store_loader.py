@@ -5,7 +5,6 @@ import chromadb
 import numpy as np
 import pandas as pd
 
-# CONFIG IMPORT (SAFE)
 try:
     from config import (
         EMBEDDING_MODEL_NAME,
@@ -26,9 +25,7 @@ except Exception:
     VECTOR_STORE_PATH = "vector_store"
 
 
-# =========================
-# LOAD DATASET (ONLY WHEN BUILDING)
-# =========================
+
 def load_embeddings_parquet(path: str = PREBUILT_PARQUET_PATH):
     path = Path(path)
 
@@ -43,9 +40,6 @@ def load_embeddings_parquet(path: str = PREBUILT_PARQUET_PATH):
     return df
 
 
-# =========================
-# CLEAN METADATA
-# =========================
 def clean_metadata(metadata: dict):
     if not isinstance(metadata, dict):
         return {}
@@ -61,9 +55,6 @@ def clean_metadata(metadata: dict):
     return cleaned
 
 
-# =========================
-# BUILD / LOAD VECTOR STORE
-# =========================
 def build_full_vector_store(
     parquet_path: str = PREBUILT_PARQUET_PATH,
     persist_dir: str = str(VECTOR_STORE_PATH),
@@ -75,9 +66,6 @@ def build_full_vector_store(
 
     client = chromadb.PersistentClient(path=persist_dir)
 
-    # -------------------------
-    # CHECK EXISTING COLLECTION FIRST (FAST PATH)
-    # -------------------------
     existing = {c.name: c for c in client.list_collections()}
 
     if collection_name in existing and not force_rebuild:
@@ -88,9 +76,6 @@ def build_full_vector_store(
         print("[VECTOR STORE] Deleting old collection (force rebuild)")
         client.delete_collection(collection_name)
 
-    # -------------------------
-    # ONLY LOAD DATA IF BUILDING
-    # -------------------------
     df = load_embeddings_parquet(parquet_path)
 
     # COLUMN MAPPING
@@ -99,22 +84,18 @@ def build_full_vector_store(
     embedding_col = "embedding"
     metadata_col = "metadata"
 
-    # -------------------------
     # CREATE COLLECTION
-    # -------------------------
     collection = client.create_collection(
         name=collection_name,
         metadata={
             "embedding_model": EMBEDDING_MODEL_NAME,
-            "hnsw:space": "cosine",  # cosine similarity used internally
+            "hnsw:space": "cosine",  
         },
     )
 
     n = len(df)
 
-    # -------------------------
     # INGESTION LOOP
-    # -------------------------
     for start in range(0, n, batch_size):
         end = min(start + batch_size, n)
         batch = df.iloc[start:end]
@@ -147,13 +128,7 @@ def build_full_vector_store(
     return collection
 
 
-# =========================
 # PUBLIC API
-# =========================
 def get_or_build_full_vector_store(**kwargs):
-    """
-    Fast idempotent loader:
-    - First run → builds vector DB
-    - Next runs → loads instantly (NO parquet reload)
-    """
+    
     return build_full_vector_store(**kwargs)

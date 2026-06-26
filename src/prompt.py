@@ -1,11 +1,3 @@
-"""
-Production-grade RAG Prompt Template
-
-Designed for:
-- grounded answers (no hallucination)
-- financial complaint analysis
-- structured, evidence-based responses
-"""
 
 # ROLE
 ROLE = """

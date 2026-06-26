@@ -8,22 +8,16 @@ from pathlib import Path
 from typing import List, Dict, Any
 from datetime import datetime
 
-# -----------------------------
-# SAFE IMPORT (IMPORTANT FIX)
-# -----------------------------
 from src.rag_pipeline import RAGPipeline
 
 
-# CONFIG SAFE IMPORT
 try:
     from config import EVALUATION_OUTPUT_PATH
 except Exception:
     EVALUATION_OUTPUT_PATH = Path("reports/evaluation.md")
 
 
-# -----------------------------
 # EVALUATION SET
-# -----------------------------
 EVAL_QUESTIONS = [
     "What are the most common complaints about credit card billing disputes?",
     "Why are customers unhappy with money transfer services?",
@@ -34,9 +28,7 @@ EVAL_QUESTIONS = [
 ]
 
 
-# -----------------------------
 # UTILITIES
-# -----------------------------
 def escape_md(text: str) -> str:
     return str(text).replace("|", "\\|").replace("\n", "<br>")
 
@@ -54,10 +46,7 @@ def format_sources(retrieved_chunks: List[dict], n: int = 2) -> List[str]:
 
     return sources
 
-
-# -----------------------------
 # CORE EVALUATION
-# -----------------------------
 def run_evaluation(
     pipeline: RAGPipeline,
     questions: List[str],
@@ -98,16 +87,12 @@ def run_evaluation(
                 "status": "failed",
             })
 
-    # -----------------------------
     # SUMMARY
-    # -----------------------------
     successful = sum(1 for r in results if r["status"] == "success")
     failed = len(results) - successful
     avg_time = round(sum(r["time"] for r in results) / len(results), 2)
 
-    # -----------------------------
     # REPORT
-    # -----------------------------
     lines = [
         "# RAG System Evaluation Report",
         "",
@@ -135,9 +120,7 @@ def run_evaluation(
         f"- Average Response Time: {avg_time}s",
     ])
 
-    # -----------------------------
     # SAVE FILE
-    # -----------------------------
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text("\n".join(lines), encoding="utf-8")
@@ -147,9 +130,7 @@ def run_evaluation(
     return results
 
 
-# -----------------------------
 # CLI ENTRY
-# -----------------------------
 def main():
     parser = argparse.ArgumentParser()
 
@@ -167,7 +148,6 @@ def main():
     if args.backend:
         pipeline_kwargs["generation_backend"] = args.backend
 
-    # IMPORTANT: pipeline created once (prevents reload bugs)
     pipeline = RAGPipeline(**pipeline_kwargs)
 
     run_evaluation(

@@ -1,12 +1,5 @@
-"""
-RAG Orchestration Layer (Production-grade FIXED)
-"""
-
 from typing import Optional, Dict, Any
 
-# -----------------------------
-# CONFIG IMPORT (STRICT - NO SILENT FALLBACK)
-# -----------------------------
 try:
     from src.config import (
         TOP_K,
@@ -17,10 +10,6 @@ try:
 except Exception as e:
     raise RuntimeError(f"[CONFIG ERROR] Failed to import config: {e}")
 
-
-# -----------------------------
-# SAFE IMPORTS
-# -----------------------------
 from src.embedding import load_model as load_embedding_model
 from src.generator import generate_answer
 from src.prompt import build_prompt
@@ -92,7 +81,6 @@ class RAGPipeline:
                 where=where,
             )
 
-            # 🔥 FIX: ONLY REFUSE IF NOTHING IS RETRIEVED AT ALL
             if not retrieved_chunks:
                 return {
                     "question": question,
@@ -104,13 +92,11 @@ class RAGPipeline:
                     "prompt": None,
                 }
 
-            # 🔥 OPTIONAL SAFETY: soft filter only (DO NOT BLOCK ALL CONTEXT)
             retrieved_chunks = [
                 c for c in retrieved_chunks
                 if c.get("similarity", 0) >= 0.15
             ]
 
-            # fallback: if filtering removed everything, keep top 2
             if not retrieved_chunks:
                 retrieved_chunks = retrieved_chunks[:2]
 
