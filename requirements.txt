@@ -12,3 +12,4 @@ tqdm>=4.66.0
 pytest
 pyarrow
 torch
+gradio

@@ -1,12 +1,3 @@
-"""
-Production-grade RAG Prompt Template
-
-Designed for:
-- grounded answers (no hallucination)
-- financial complaint analysis
-- structured, evidence-based responses
-"""
-
 # ROLE
 ROLE = """
 You are a senior financial complaint analyst working for a digital banking company.
@@ -42,7 +33,7 @@ If and only if context is relevant:
 
 Answer in structured format:
 
-1. Direct Answer (1–2 sentences)
+1. Answer:
 2. Key Complaint Themes
 3. Evidence
 

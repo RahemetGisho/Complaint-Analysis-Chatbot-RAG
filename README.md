@@ -1,223 +1,104 @@
-# Customer Complaint Analysis with RAG
+# Complaint-Analysis-Chatbot-RAG
 
-## Overview
+A Retrieval-Augmented Generation (RAG) tool that lets Product, Support, and Compliance staff ask plain-English questions about customer complaints and get answers grounded in real complaint excerpts — every claim traceable back to its source.
 
-This project builds the foundation of a Retrieval-Augmented Generation (RAG) system using customer complaint data from financial products.
+Built on the CFPB Consumer Complaint Database, scoped to four product lines: Credit Card, Personal Loan, Savings Account, and Money Transfer.
 
-- **1:** Exploratory Data Analysis (EDA) and preprocessing
-- **2:** Sampling, chunking, embedding generation, and vector store indexing
+## How it works
 
-The final output is a retrieval-ready vector database that can be used for semantic search and downstream RAG applications.
+1. **Data preparation** — CFPB complaints are filtered to the target products and cleaned (PII-redaction tokens and boilerplate removed), then split into chunks.
+2. **Embedding & indexing** — Each chunk is embedded with `all-MiniLM-L6-v2` and stored in a ChromaDB vector store, with metadata (complaint ID, product, company, etc.) attached for traceability.
+3. **Retrieval-augmented generation** — A question is embedded with the same model, the most relevant chunks are retrieved, and an LLM generates an answer using only that retrieved context.
+4. **Interactive UI** — A Gradio interface for non-technical staff: ask a question, watch the answer stream in, and see the exact source excerpts behind it.
 
----
+## Project structure
 
-# 1: EDA and Preprocessing
-
-## Objectives
-
-- Explore complaint distributions
-- Analyze missing values
-- Clean complaint narratives
-- Standardize product categories
-- Prepare data for retrieval and embedding
-
-## Processing Steps
-
-1. Loaded the CFPB complaint dataset
-2. Removed records with missing complaint narratives
-3. Cleaned complaint text:
-   - Lowercasing
-   - Removing special characters
-   - Removing extra whitespace
-4. Standardized product categories
-5. Created a filtered dataset for downstream processing
-
-## Output
-
-```text
-data/filtered_complaints.csv
 ```
-
----
-
-# 2: Text Chunking, Embedding, and Vector Store Indexing
-
-## Objectives
-
-Build a retrieval-ready knowledge base from complaint narratives.
-
-### Pipeline
-
-1. Load cleaned complaint data
-2. Draw a proportional stratified sample
-3. Chunk complaint narratives
-4. Generate embeddings
-5. Store embeddings in ChromaDB
-
----
-
-## Sampling Strategy
-
-### Stratified Sampling
-
-The full dataset contains more than one million complaints. Generating embeddings for the entire dataset can be computationally expensive.
-
-Using a stratified sample:
-
-- Preserves category balance
-- Reduces processing time
-- Demonstrates the complete RAG pipeline efficiently
-
----
-
-## Chunking Strategy
-
-Complaint narratives are split using LangChain's `RecursiveCharacterTextSplitter`.
-
-### Parameters
-
-```python
-chunk_size = 500
-chunk_overlap = 50
-```
-
----
-
-## Embedding Model
-
-Model used:
-
-```text
-sentence-transformers/all-MiniLM-L6-v2
-```
-
----
-
-## Vector Store
-
-Embeddings are stored in ChromaDB.
-
----
-
-# Project Structure
-
-```text
 Complaint-Analysis-Chatbot-RAG/
-│
-├── README.md
-│
-├── data/
-│   ├── raw
-│       ├── filtered_complaints.csv
-│   │
-│   └── processed/
-│       ├── sampled_complaints.csv
-│       └── chunks_metadata.csv
-│
-├── notebooks/
-│   └── eda_preprocessing.ipynb
-│
+├── app.py
 ├── src/
+│   ├── config.py
 │   ├── sampling.py
 │   ├── chunking.py
 │   ├── embedding.py
-│   ├── vector_store.py
-│   └── build_pipeline.py
-│
+│   ├── vector_store_loader.py
+│   ├── retriever.py
+│   ├── prompt.py
+│   ├── generator.py
+│   ├── rag_pipeline.py
+│   └── evaluate.py
+├── notebooks/
+├── data/
+│   ├── raw/
+│   └── processed
 ├── vector_store/
-│
 ├── reports/
-│
+├── tests/
 ├── requirements.txt
-│
-└── .gitignore
+└── .env
 ```
 
----
-
-# Installation
-
-## Clone Repository
-
-```bash
-git clone https://github.com/RahemetGisho/Complaint-Analysis-Chatbot-RAG.git
-cd Complaint-Analysis-Chatbot-RAG
-```
-
-## Create Virtual Environment
-
-### Windows
+## Setup
 
 ```bash
 python -m venv .venv
-.venv\Scripts\activate
-```
+.venv\Scripts\activate        # Windows
+source .venv/bin/activate     # macOS/Linux
 
-### Linux / macOS
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-```
-
-## Install Dependencies
-
-```bash
 pip install -r requirements.txt
 ```
 
----
+Create a `.env` file in the project root:
 
-# Running Task 2 Pipeline
+```
+HF_TOKEN=your_huggingface_token_here
+```
 
-From the project root:
+## Data
+
+Two inputs are required and are not committed to the repository:
+
+| File                           | Description                           | Used by                             |
+| ------------------------------ | ------------------------------------- | ----------------------------------- |
+| Full CFPB complaint export     | Raw complaint data                    | `notebooks/eda_preprocessing.ipynb` |
+| `complaint_embeddings.parquet` | Pre-built chunk embeddings + metadata | `vector_store_loader.py`            |
+
+Place the parquet file at `data/raw/complaint_embeddings.parquet` before first run.
+
+## Usage
+
+Build/refresh the vector store and run the evaluation harness:
 
 ```bash
-python src/build_pipeline.py
+python src/evaluate.py
 ```
 
----
+Launch the chat interface:
 
-# Generated Outputs
-
-## Stratified Sample
-
-```text
-data/processed/sampled_complaints.csv
+```bash
+python app.py
 ```
 
-Contains the 12,000-row proportional stratified sample.
+Then open the local URL Gradio prints (default `http://127.0.0.1:7860`).
 
----
+## Configuration
 
-## Chunk Metadata
+Key settings in `src/config.py`:
 
-```text
-data/processed/chunks_metadata.csv
+| Setting                  | Default                    | Purpose                                |
+| ------------------------ | -------------------------- | -------------------------------------- |
+| `TOP_K`                  | `5`                        | Chunks retrieved per question          |
+| `GENERATION_BACKEND`     | `hf_inference_api`         | `hf_inference_api` or `local_pipeline` |
+| `HF_GENERATION_MODEL`    | `Qwen/Qwen2.5-7B-Instruct` | Hosted model (requires `HF_TOKEN`)     |
+| `LOCAL_GENERATION_MODEL` | `google/flan-t5-base`      | Local fallback, no API key needed      |
+| `COLLECTION_NAME`        | `complaints`               | ChromaDB collection name               |
+
+## Testing
+
+```bash
+pytest tests/ -v
 ```
 
-Contains all generated chunks and associated metadata for inspection and debugging.
+## Tech stack
 
----
-
-## ChromaDB Vector Store
-
-```text
-vector_store/
-```
-
-Contains persisted embeddings and metadata used for semantic retrieval.
-
----
-
-# Technologies Used
-
-- Python
-- Pandas
-- NumPy
-- LangChain
-- Sentence Transformers
-- ChromaDB
-- Jupyter Notebook
-
----
+Python · ChromaDB · sentence-transformers (`all-MiniLM-L6-v2`) · Hugging Face Inference API / Transformers · Gradio · LangChain text splitters
