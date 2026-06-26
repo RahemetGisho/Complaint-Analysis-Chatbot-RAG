@@ -50,3 +50,5 @@ gradio_cached_examples/
 
 # Git
 .git/
+
+test_vector_store_db/
