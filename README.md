@@ -91,7 +91,7 @@ Key settings in `src/config.py`:
 | `GENERATION_BACKEND`     | `hf_inference_api`         | `hf_inference_api` or `local_pipeline` |
 | `HF_GENERATION_MODEL`    | `Qwen/Qwen2.5-7B-Instruct` | Hosted model (requires `HF_TOKEN`)     |
 | `LOCAL_GENERATION_MODEL` | `google/flan-t5-base`      | Local fallback, no API key needed      |
-| `COLLECTION_NAME`        | `complaints`               | ChromaDB collection name               |
+| `COLLECTION_NAME`        | `crediTrust_complaints`               | ChromaDB collection name               |
 
 ## Testing
 
